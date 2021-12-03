@@ -1,0 +1,7 @@
+venv
+uploaded_games
+results
+.idea
+*.pyc
+*.txt
+config

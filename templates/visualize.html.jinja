@@ -1,0 +1,156 @@
+<html>
+<head>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:800|Raleway:300">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/jquery-3.6.0.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.6.1/dist/chart.min.js"></script>
+  <script>
+    var game_id = "{{ id }}";
+    var count_data = {};
+    var player_hour_data = {};
+    var myChart, myChart2;
+    var ctx = null, ctx2 = null;
+
+    function onReady() {
+      ctx = document.getElementById('myChart1').getContext('2d');
+      ctx2 = document.getElementById('myChart2').getContext('2d');
+      Chart.defaults.color = "#fff";
+      Chart.defaults.font.family = "Raleway, serif";
+      Chart.defaults.font.size = 32;
+      myChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+              labels: [],
+              datasets: []
+          },
+          options: {
+              scales: {
+                  y: {
+                      beginAtZero: true
+                  }
+              }
+          }
+        });
+        myChart2 = new Chart(ctx2, {
+          type: 'bar',
+          data: {
+              labels: [],
+              datasets: []
+          },
+          options: {
+              scales: {
+                  y: {
+                      beginAtZero: true
+                  }
+              }
+          }
+        });
+        loadGame(addButtons);
+        var button_all = $(`<input type="button" value="All" class="player-button">`);
+        button_all.bind("click", () => {loadGame(null)});
+        button_all.appendTo($("#player-buttons-container"));
+    }
+
+    function loadGame(callback) {
+      if (Object.keys(count_data).length == 0) {
+        var promise = $.post("/loadGame",
+        {
+          "api-method": "get-counts",
+          "game-id": game_id
+        }, (data, status) => {
+          count_data = data;
+          setChartsAll();
+        })
+        if (callback != null) promise.then(callback);
+      }
+      else {
+        setChartsAll();
+        if (callback != null) callback();
+      }
+    }
+
+    function addButtons() {
+      for (const [key, value] of Object.entries(count_data)) {
+        var button = $(`<input type="button" value="" class="player-button">`);
+        button.bind("click", () => {
+          seePlayer(key);
+        });
+        button.appendTo($("#player-buttons-container"));
+        button[0].value = key;
+      }
+    }
+
+    function seePlayer(playerName) {
+      if (playerName in player_hour_data) {
+        setChartPlayer(playerName);
+      }
+      else {
+        $.post("/loadGame", {
+          "api-method": "get-common-hour",
+          "game-id": game_id,
+          "player-name": playerName
+        }, (data, status) => {
+          player_hour_data[playerName] = data;
+          setChartPlayer(playerName);
+        })
+      }
+    }
+
+    function setChartPlayer(playerName) {
+      myChart.data.labels = Object.keys(player_hour_data[playerName]);
+      var color = count_data[playerName]["color"];
+      myChart.data.datasets = [{
+        label: '# of Wins',
+        data: Object.values(player_hour_data[playerName]),
+        backgroundColor: [`rgba(${color[0]}, ${color[1]}, ${color[2]}, 1)`],
+        borderColor: [`rgba(${color[0]}, ${color[1]}, ${color[2]}, 1)`],
+        borderWidth: 1
+      }];
+      myChart.update();
+    }
+
+    function setChartsAll() {
+      var counts = [];
+      var perDays = [];
+      var backgroundColors_ = [];
+      var borderColors_ = [];
+      for (const [key, value] of Object.entries(count_data)) {
+        counts.push(value["count"]);
+        perDays.push(value["wins-per-day"]);
+        var color = value["color"];
+        backgroundColors_.push(`rgba(${color[0]}, ${color[1]}, ${color[2]}, 1)`);
+        borderColors_.push(`rgba(${color[0]}, ${color[1]}, ${color[2]}, 1)`);
+      }
+
+      myChart.data.labels = Object.keys(count_data);
+      myChart.data.datasets = [{
+        label: '# of Wins',
+        data: counts,
+        backgroundColor: backgroundColors_,
+        borderColor: borderColors_,
+        borderWidth: 1
+      }];
+
+      myChart2.data.labels = Object.keys(count_data);
+      myChart2.data.datasets = [{
+        label: 'Wins/Day',
+        data: perDays,
+        backgroundColor: backgroundColors_,
+        borderColor: borderColors_,
+        borderWidth: 1
+      }];
+      myChart.update();
+      myChart2.update();
+    }
+
+    $(document).ready(onReady);
+  </script>
+</head>
+<body>
+  <h1>Game with name {{ game_name }}</h1>
+  <div id="player-buttons-container">
+  </div>
+  <canvas id="myChart1" class="chart" width="400" height="400"></canvas>
+  <canvas id="myChart2" class="chart" width="400" height="400"></canvas>
+</body>
+</html>

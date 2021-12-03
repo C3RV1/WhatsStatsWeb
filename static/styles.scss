@@ -1,0 +1,60 @@
+$font-stack: Raleway, sans-serif;
+$text-color: #FFFFFF;
+// $text-color: #000266;
+$secondary-color: #FF9A5C;
+// $background-color: #424B76;
+$background-color: #838383;
+
+body {
+    background-color: $background-color
+}
+
+%text-element {
+    font-family: $font-stack;
+    color: $text-color;
+}
+
+input {
+    margin: 0.5vw;
+}
+
+h1 {
+    @extend %text-element;
+    font-weight: 800;
+    font-size: 72;
+    margin: 1vw;
+}
+
+input[type="file"] {
+    @extend %text-element;
+    font-weight: 300;
+    font-size: 32;
+}
+
+input[type="button"], input[type="submit"] {
+    color: #000000;
+}
+
+input[type="submit"] {
+    @extend %text-element;
+    font-weight: 800;
+    font-size: 32;
+    width: 10vw;
+    height: 3vw;
+    background-color: $secondary-color;
+}
+
+.player-button {
+    @extend %text-element;
+    font-size: 16;
+    font-weight: 300;
+    color: #000000;
+}
+
+.chart {
+    max-height: 100%;
+    height: 30vw;
+    margin: 5vw;
+    max-width: 1000px;
+    display: inline;
+}
