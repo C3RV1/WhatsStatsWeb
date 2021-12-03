@@ -35,7 +35,7 @@ input[type=submit] {
 }
 
 .player-button {
-  font-size: 16;
+  font-size: 2vw;
   font-weight: 300;
   color: #000000;
 }
