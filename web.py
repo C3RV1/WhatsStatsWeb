@@ -70,6 +70,7 @@ def get_game(game_id) -> Game:
         path = os.path.join(app.config['UPLOAD_FOLDER'], game_id)
         if not os.path.isfile(path):
             return None
+        msg_count = 0
         with open(f"{path}.json", "r") as json_file:
             json_data = json.loads(json_file.read())
             g.name = json_data["name"]
@@ -77,11 +78,14 @@ def get_game(game_id) -> Game:
             with open(f"./base_chats/{g.name}.txt", "rb") as base_game:
                 for line in base_game.readlines():
                     line = line.decode("utf-8")
-                    g.process_line(line)
+                    if g.process_line(line):
+                        msg_count += 1
         with open(path, "rb") as game:
             for line in game.readlines():
                 line = line.decode("utf-8")
-                g.process_line(line)
+                if g.process_line(line):
+                    msg_count += 1
+        print(f"Analysed game {g.name} with {msg_count} messages")
         games[game_id] = g
     return games[game_id]
 

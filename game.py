@@ -113,6 +113,7 @@ class Game:
             win_count = msg.count('✅')
             for _ in range(win_count):
                 player_obj.add_win(Win(time))
+            return True
         elif re_match := self.PATTERN_IOS.search(line):
             time = datetime.strptime(re_match.group(1), "%d/%m/%y %H:%M:%S")
             player = re_match.group(2)
@@ -126,6 +127,8 @@ class Game:
             win_count = msg.count('✅')
             for _ in range(win_count):
                 player_obj.add_win(Win(time))
+            return True
+        return False
 
     def ranking(self):
         players = list(self.players_by_name.values())
