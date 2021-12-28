@@ -100,7 +100,7 @@ class Game:
 
     def process_line(self, line):
         if re_match := self.PATTERN_ANDROID.search(line):
-            time = datetime.strptime(re_match.group(1), "%d/%-m/%y %H:%M")
+            time = datetime.strptime(re_match.group(1), "%d/%m/%y %H:%M")
             player = re_match.group(2)
             msg = re_match.group(3)
 
@@ -114,7 +114,7 @@ class Game:
             for _ in range(win_count):
                 player_obj.add_win(Win(time))
         elif re_match := self.PATTERN_IOS.search(line):
-            time = datetime.strptime(re_match.group(1), "%d/%-m/%y %H:%M:%S")
+            time = datetime.strptime(re_match.group(1), "%d/%m/%y %H:%M:%S")
             player = re_match.group(2)
             msg = re_match.group(3)
             if player not in self.players_by_name:
