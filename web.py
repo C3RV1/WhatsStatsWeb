@@ -1,4 +1,5 @@
 import base64
+import hashlib
 import json
 import random
 import shutil
@@ -69,26 +70,51 @@ def get_game(game_id) -> Game:
         path = os.path.join(app.config['UPLOAD_FOLDER'], game_id)
         if not os.path.isfile(path):
             return None
+        with open(f"{path}.json", "r") as json_file:
+            json_data = json.loads(json_file.read())
+            g.name = json_data["name"]
+        if os.path.isfile(f"./base_chats/{g.name}.txt"):
+            with open(f"./base_chats/{g.name}.txt", "rb") as base_game:
+                for line in base_game.readlines():
+                    line = line.decode("utf-8")
+                    g.process_line(line)
         with open(path, "rb") as game:
             for line in game.readlines():
                 line = line.decode("utf-8")
                 g.process_line(line)
-        with open(f"{path}.json", "r") as json_file:
-            json_data = json.loads(json_file.read())
-            g.name = json_data["name"]
         games[game_id] = g
     return games[game_id]
+
+
+@app.route("/clear", methods=["GET"])
+def clear():
+    secret = request.args.get("secret", None)
+    if secret is None:
+        return redirect(url_for('index'))
+    if not hashlib.sha256(secret.encode("utf-8")).digest() == b'\xff\xd9F(2\x19\xb6\xde\xc8pQ\xbe\xd9\xb3\xca\xdf\xfd\xfd\xe6\x0f\xa9\x86\x90\xc0,\x90\xb8\xe6<\\/\xe8':
+        return redirect(url_for('index'))
+    do_clear()
+    return '<html><body><h1>Games deleted</h1></body></html>'
+
+
+def do_clear():
+    global games
+    games = {}
+    if os.path.isdir("uploaded_games"):
+        shutil.rmtree("uploaded_games")
+    os.mkdir("uploaded_games")
 
 
 @app.route("/loadGame", methods=["POST"])
 def load_game():
     method = request.form.get("api-method", None)
     game_id = request.form.get("game-id", None)
-    print(f"Load game: {game_id}")
-    print(method, game_id)
     if method is None or game_id is None:
         return {}
     g: Game = get_game(game_id)
+    if g is None:
+        return {}
+    print(f"Requested {method} for game with id {game_id} ({g.name})")
     if method == "get-counts":
         return g.construct_counts(start_date=START_DATE)
     elif method == "get-common-hour":
@@ -96,13 +122,10 @@ def load_game():
         if player_name is None:
             return {}
         hour = g.get_player_hour(player_name, start_date=START_DATE)
-        print(hour)
         return hour
-    # return g.get_as_json()
+    return {}
 
 
 if __name__ == '__main__':
-    if os.path.isdir("uploaded_games"):
-        shutil.rmtree("uploaded_games")
-    os.mkdir("uploaded_games")
+    do_clear()
     app.run(debug=True, host="0.0.0.0")
