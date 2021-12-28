@@ -51,7 +51,7 @@ class Player:
         if start_date is None:
             start_date: datetime = self.first_appearance
         if end_date is None:
-            end_date: datetime = self.wins[-1].time
+            end_date: datetime = self.wins[-1].time if self.wins else start_date
         days = (end_date - start_date).days + 1
         return len(wins) / days
 
@@ -80,7 +80,7 @@ class Player:
         if start_date is None:
             start_date: datetime = self.first_appearance
         if end_date is None:
-            end_date: datetime = self.wins[-1].time
+            end_date: datetime = self.wins[-1].time if self.wins else start_date
         wins = [win if start_date <= win.time <= end_date else None for win in self.wins]
         return list(filter(lambda x: x is not None, wins))
 
