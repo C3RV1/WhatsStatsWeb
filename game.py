@@ -91,18 +91,32 @@ class Player:
 
 
 class Game:
-    PATTERN = re.compile("^(.+) - ([^:]+): (.+)$")
+    PATTERN_ANDROID = re.compile("^(.+) - ([^:]+): (.+)$")
+    PATTERN_IOS = re.compile("^\\[(.+)] ([^:]+): (.+)$")
 
     def __init__(self):
         self.players_by_name = {}
         self.name = ""
 
     def process_line(self, line):
-        if re_match := self.PATTERN.search(line):
-            time = datetime.strptime(re_match.group(1), "%d/%m/%y %H:%M")
+        if re_match := self.PATTERN_ANDROID.search(line):
+            time = datetime.strptime(re_match.group(1), "%d/%-m/%y %H:%M")
             player = re_match.group(2)
             msg = re_match.group(3)
 
+            if player not in self.players_by_name:
+                player_obj = Player(player, time)
+                self.players_by_name[player] = player_obj
+            else:
+                player_obj = self.players_by_name[player]
+
+            win_count = msg.count('✅')
+            for _ in range(win_count):
+                player_obj.add_win(Win(time))
+        elif re_match := self.PATTERN_IOS.search(line):
+            time = datetime.strptime(re_match.group(1), "%d/%-m/%y %H:%M:%S")
+            player = re_match.group(2)
+            msg = re_match.group(3)
             if player not in self.players_by_name:
                 player_obj = Player(player, time)
                 self.players_by_name[player] = player_obj
