@@ -19,7 +19,7 @@ ALLOWED_EXTENSIONS = {'txt'}
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 games = {}
-START_DATE = datetime.datetime(2021, 12, 1, 0, 0, 0)
+START_DATE = None
 
 
 # TODO: Auto remove after some time
@@ -43,6 +43,7 @@ def upload_file():
         if file:
             while True:
                 filename = base64.b64encode(struct.pack("I", random.randint(0, 10000))).decode("ascii")
+                filename = filename.replace("/", "_")
                 if not os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], filename)):
                     break
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))

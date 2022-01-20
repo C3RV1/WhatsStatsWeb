@@ -16,7 +16,7 @@ class Win:
         self.time: datetime = time_
 
     def __repr__(self):
-        print(f"<Win time={self.time}>")
+        return f"<Win time={self.time}>"
 
     def get_as_json(self):
         return self.time.strftime("%d/%m/%y %H:%M")
@@ -99,6 +99,9 @@ class Game:
         self.name = ""
 
     def process_line(self, line):
+        line = line.replace("\r\n", "")
+        line = line.replace("\n", "")
+        line = line.replace("\u200e", "")
         if re_match := self.PATTERN_ANDROID.search(line):
             time = datetime.strptime(re_match.group(1), "%d/%m/%y %H:%M")
             player = re_match.group(2)
