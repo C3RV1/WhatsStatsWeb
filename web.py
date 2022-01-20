@@ -22,6 +22,10 @@ games = {}
 START_DATE = None
 
 
+def get_end_date():
+    return datetime.datetime.now() + datetime.timedelta(0, 0, 0, 0, 0, 1, 0)
+
+
 # TODO: Auto remove after some time
 # TODO: Individual player stats (per hours...)
 # TODO: Choose start_date and end_date from webpage
@@ -121,12 +125,12 @@ def load_game():
         return {}
     print(f"Requested {method} for game with id {game_id} ({g.name})")
     if method == "get-counts":
-        return g.construct_counts(start_date=START_DATE)
+        return g.construct_counts(start_date=START_DATE, end_date=get_end_date())
     elif method == "get-common-hour":
         player_name = request.form.get("player-name", None)
         if player_name is None:
             return {}
-        hour = g.get_player_hour(player_name, start_date=START_DATE)
+        hour = g.get_player_hour(player_name, start_date=START_DATE, end_date=get_end_date())
         return hour
     return {}
 
